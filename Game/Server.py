@@ -49,24 +49,30 @@ class memory:
 		y2 = random.randint(1, self.difficulty)
 		x2 = random.randint(1, self.difficulty)
 		msg = self.verify_move((y1, x1), (y2, x2), 1)
-		return msg
+		# while(msg == "Invalid move"):
+		# 	msg = self.verify_move((y1, x1), (y2, x2), 1)
+		
+		move = self.str_board_move((y1, x1), (y2, x2))
+		
+		return msg, move
 
 	def verify_move(self, point1, point2, player):
 		x1 = self.get_position(point1)
 		x2 = self.get_position(point2)
 		if(x1 < 0 or x2 < 0):
-			print("Invalid move \n")
+			print("Invalid move")
+			msg = "Invalid move"
 		else:
 			if(self.board[x1] == self.board[x2]):
 				print("Point")
-				msg = "Point \n"
+				msg = "Point"
 				self.set_score(x1, player)
 				self.set_score(x2, player)
 			else:
-				print("Incorrect move")
-				msg = "Incorrect move \n"
+				print("Try again!")
+				msg = "Try again!"
 		
-			self.print_board_move(point1, point2)
+			# self.print_board_move(point1, point2)
 		
 		return msg
 
@@ -77,21 +83,22 @@ class memory:
 		player1 = int(np.count_nonzero(self.score == 1) / 2)
 		player2 = int(np.count_nonzero(self.score == 2) / 2)
 		# print("P1: " + str(player1) + " P2: " + str(player2))
-		return "P1: " + str(player1) + " P2: " + str(player2) + " \n"
+		return "CPU: " + str(player1) + " Player: " + str(player2)
 	
-	def str_board_move(self):
+	def str_board_move(self, point1, point2):
 		strboardmove = ""
 		i = 0
 		for y in range(self.difficulty):
 			row = ""
 			for x in range(self.difficulty):
 				if(i == self.get_position(point1) or i == self.get_position(point2) or self.score[i] != 0):
-					row += str(self.board[i])
+					row += str(self.board[i]) + " "
 				else:
-					row += "x"
+					row += "x "
 				i += 1
 			
 			strboardmove += row
+			strboardmove += ","
 
 		return strboardmove
 
@@ -121,7 +128,6 @@ class memory:
 			
 			print(row)
 
-
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 buffer_size = 1024
@@ -131,39 +137,49 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPServerSocket:
 	TCPServerSocket.listen()
 	print("Listening...")
 
-	Client_conn, Client_addr = TCPServerSocket.accept()
-	with Client_conn:
-		print("Client: ", Client_addr)
+	sock_fd, client_addr = TCPServerSocket.accept()
+	with sock_fd:
+		print("Client: ", client_addr)
 		while True:
-			data = Client_conn.recv(buffer_size)
+			print("Waiting for player to choose difficulty...")
+			data = sock_fd.recv(buffer_size)
 			dif = data.decode("ascii")
 			if(dif == "1"):
 				game = memory(4)
 				game.print_board()
 				while(np.count_nonzero(game.score) < len(game.score)):
-					print("Waiting player's move")
-					data = Client_conn.recv(buffer_size)
-					p = data.decode("ascii")
-					point1 = p.split(",")
-					data = Client_conn.recv(buffer_size)
-					p = data.decode("ascii")
-					point2 = p.split(",")
-					print(point1)
-					print(point2)
+					print("Waiting players move")
+					
+					data = sock_fd.recv(buffer_size)
+					points = data.decode("ascii").split(":")
+
+					point1 = points[0].split(",")
+					point2 = points[1].split(",")
+
 					msg = game.verify_move(point1, point2, 2)
-					board = game.str_board_move().encode("ascii")
-					print(Client_conn.sendall(board))
-					data = msg.encode("ascii")
-					print(Client_conn.sendall(data))
-					score = game.count_scores()
-					print(Client_conn.sendall(score.encode("ascii")))
-					# msg = game.random_move()
-					# data = game.str_board_move().encode("ascii")
-					# Client_conn.sendall(data)
-					# data = msg.encode("ascii")
-					# Client_conn.sendall(data)
-					# data = game.count_scores()
-					# Client_conn.sendall(data.encode("ascii"))
+					if(msg == "Invalid move"):
+						msg += ", "
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					else:
+						board = game.str_board_move(point1, point2)
+						msg += "," + board
+						score = game.count_scores()
+						msg += score
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+
+					msg, move = game.random_move()
+					if(msg == "Invalid move"):
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					else:
+						msg += "," + move
+						score = game.count_scores()
+						msg += score
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					
 			elif(dif == "2"):
 				game = memory(6)
 				game.print_board()
