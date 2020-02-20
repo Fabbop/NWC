@@ -13,17 +13,15 @@ def print_msg(data):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPClientSocket:
 	TCPClientSocket.connect((HOST, PORT))
 	
-	print("Choose difficulty: ")
-	print("1) 4 x 4: ")
-	print("2) 6 x 6: ")
-	diff = input()
-	TCPClientSocket.sendall(diff.encode("ascii"))
-
 	while(True):
+		print("Choose difficulty: ")
+		print("1) 4 x 4: ")
+		print("2) 6 x 6: ")
+		diff = input()
+		TCPClientSocket.sendall(diff.encode("ascii"))
 		winner = False
-		if(winner):
-			break
-		else:
+
+		while(not winner):
 			points = input("point 1: ")
 			points += ":" + input("point 2: ")
 			TCPClientSocket.sendall(points.encode("ascii"))
@@ -35,3 +33,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPClientSocket:
 
 			data = TCPClientSocket.recv(buffer_size)
 			print_msg(data.decode("ascii"))
+
+			data = TCPClientSocket.recv(buffer_size)
+			if(data.decode("ascii") != "Waiting players move"):
+				winner = True

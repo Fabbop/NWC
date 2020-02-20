@@ -148,7 +148,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPServerSocket:
 				game = memory(4)
 				game.print_board()
 				while(np.count_nonzero(game.score) < len(game.score)):
-					print("Waiting players move")
+					print("Waiting players move...")
 					
 					data = sock_fd.recv(buffer_size)
 					points = data.decode("ascii").split(":")
@@ -180,12 +180,50 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPServerSocket:
 						data = msg.encode("ascii")
 						sock_fd.sendall(data)
 					
+					sock_fd.sendall(b"Waiting players move")
+
+				sock_fd.sendall(b"Game ended")
 			elif(dif == "2"):
 				game = memory(6)
 				game.print_board()
+				while(np.count_nonzero(game.score) < len(game.score)):
+					print("Waiting players move...")
+					
+					data = sock_fd.recv(buffer_size)
+					points = data.decode("ascii").split(":")
+
+					point1 = points[0].split(",")
+					point2 = points[1].split(",")
+
+					msg = game.verify_move(point1, point2, 2)
+					if(msg == "Invalid move"):
+						msg += ", "
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					else:
+						board = game.str_board_move(point1, point2)
+						msg += "," + board
+						score = game.count_scores()
+						msg += score
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+
+					msg, move = game.random_move()
+					if(msg == "Invalid move"):
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					else:
+						msg += "," + move
+						score = game.count_scores()
+						msg += score
+						data = msg.encode("ascii")
+						sock_fd.sendall(data)
+					
+					sock_fd.sendall(b"Waiting players move")
+
+				sock_fd.sendall(b"Game ended")
 			else:
 				print("Invalid option")
-
 
 # board = memory(4)
 # board.print_board()
