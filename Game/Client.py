@@ -17,11 +17,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPClientSocket:
 		print("Choose difficulty: ")
 		print("1) 4 x 4: ")
 		print("2) 6 x 6: ")
+		print("3) exit ")
 		diff = input()
+		
+		if(diff == "3"):
+			break
+
 		TCPClientSocket.sendall(diff.encode("ascii"))
 		winner = False
 
 		while(not winner):
+			data = TCPClientSocket.recv(buffer_size)
+			if(data.decode("ascii") == "Game ended"):
+				winner = True
 			points = input("point 1: ")
 			points += ":" + input("point 2: ")
 			TCPClientSocket.sendall(points.encode("ascii"))
@@ -33,7 +41,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as TCPClientSocket:
 
 			data = TCPClientSocket.recv(buffer_size)
 			print_msg(data.decode("ascii"))
-
-			data = TCPClientSocket.recv(buffer_size)
-			if(data.decode("ascii") != "Waiting players move"):
-				winner = True
