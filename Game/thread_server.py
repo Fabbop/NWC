@@ -51,26 +51,37 @@ class server:
 		# print("Connections: ", len(self.clients))
 		# print(self.clients)
 
+	def receive_data(self, conn):
+		while True:
+			data = conn.recv(self.buffer_size)
+			if(data):
+				points = data.decode("ascii")
+				point1, point2 = get_points(points)
+				return point1, point2
+
+
 	def play(self, conn, addr):
 		try:
 			cur_thread = threading.current_thread()
 			print("{} playing from {}".format(addr, cur_thread.name))
 			while(np.count_nonzero(self.game.score) < len(self.game.score)):
-				conn.sendall(b"Waiting player move")
+				conn.sendall(b"msg=Waiting player move")
 				print("Waiting players move...")
+
+				point1, point2 = self.receive_data(conn)
 				
-				data = conn.recv(self.buffer_size)
-				points = data.decode("ascii")
-				point1, point2 = get_points(points)
+				# data = conn.recv(self.buffer_size)
+				# points = data.decode("ascii")
+				# point1, point2 = get_points(points)
 				
-				# last, score, board = make_move(self.game, point1, point2, addr[1])
-				# for i in self.clients:
-				# 	i.sendall(last)
-				# 	i.sendall(score)
-				# 	i.sendall(board)
+				last, score, board = make_move(self.game, point1, point2, addr[1])
+				for i in self.clients:
+					i.sendall(last)
+					i.sendall(score)
+					i.sendall(board)
 			
 			for i in self.clients:
-				i.sendall(b"Game finished")
+				i.sendall(b"msg=Game finished")
 		except Exception as e:
 			print(e)
 		finally:

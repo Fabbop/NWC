@@ -26,9 +26,11 @@ class client:
 
 	def receive_data(self, tcp_socket):
 		try:
+			print("receiving data...")
 			while True:
 				data = tcp_socket.recv(self.buffer_size)
 				msg = data.decode("ascii").split("=")
+				print(msg)
 				if(msg[1] == "Game finished"):
 					self.winner = True
 					break
@@ -39,10 +41,12 @@ class client:
 				elif(msg[0] == "last"):
 					self.last == msg[1]
 		except Exception as e:
+			print("Error while receiving")
 			print(e)
 
 	def play(self, tcp_socket):
 		try:
+			print("playing...")
 			while(not self.winner):
 				print("1) make move")
 				print("2) view board")
@@ -65,6 +69,7 @@ class client:
 				# data = tcp_socket.recv(self.buffer_size)
 				# self.print_msg(data.decode("ascii"))
 		except Exception as e:
+			print("Game error")
 			print(e)
 	
 	def print_msg(self, data):

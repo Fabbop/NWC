@@ -81,16 +81,16 @@ class memory:
 		x2 = self.get_position(point2)
 		if(x1 < 0 or x2 < 0 or x1 == x2):
 			print("Invalid move")
-			msg = "Invalid move"
+			msg = "msg=Invalid move"
 		else:
 			if(self.board[x1] == self.board[x2]):
 				print("Point")
-				msg = "Point"
+				msg = "msg=Point"
 				self.set_score(x1, player)
 				self.set_score(x2, player)
 			else:
 				print("Try again!")
-				msg = "Try again!"
+				msg = "msg=Try again!"
 		
 		return msg
 
@@ -100,7 +100,7 @@ class memory:
 		self.score[x] = i
 
 	def count_scores(self):
-		score = ""
+		score = "score="
 		for i in (self.players):
 			points = int(np.count_nonzero(self.score == self.get_player(i)) / 2)
 			score += "p" + str(self.get_player(i)) + ": " + str(points) + " "
@@ -110,7 +110,7 @@ class memory:
 		return score
 	
 	def str_board_move(self, point1, point2):
-		strboardmove = ""
+		strboardmove = "last="
 		i = 0
 		for y in range(self.difficulty):
 			row = ""
@@ -127,7 +127,7 @@ class memory:
 		return strboardmove
 
 	def str_board(self):
-		strboard = ""
+		strboard = "board="
 		i = 0
 		for y in range(self.difficulty):
 			row = ""
