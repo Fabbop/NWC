@@ -126,6 +126,24 @@ class memory:
 
 		return strboardmove
 
+	def str_board(self):
+		strboard = ""
+		i = 0
+		for y in range(self.difficulty):
+			row = ""
+			for x in range(self.difficulty):
+				if(self.score[i] != 0):
+					row += str(self.board[i]) + " "
+				else:
+					row += "x "
+				i += 1
+			
+			strboard += row
+			strboard += ","
+
+		return strboard
+
+
 	def print_board(self):
 		i = 0
 		for y in range(self.difficulty):

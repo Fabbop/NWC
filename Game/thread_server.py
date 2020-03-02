@@ -33,7 +33,8 @@ class server:
 				self.clients.append(client_conn)
 				self.game.add_player(client_addr[1])
 				print(self.game.players)
-				thread_read = threading.Thread(target=self.playing, args=[client_conn, client_addr])
+
+				thread_read = threading.Thread(target=self.play, args=(client_conn, client_addr))
 				self.threads.append(thread_read)
 				thread_read.start()
 				self.connection_management()
@@ -50,7 +51,7 @@ class server:
 		# print("Connections: ", len(self.clients))
 		# print(self.clients)
 
-	def playing(self, conn, addr):
+	def play(self, conn, addr):
 		try:
 			cur_thread = threading.current_thread()
 			print("{} playing from {}".format(addr, cur_thread.name))
@@ -62,10 +63,14 @@ class server:
 				points = data.decode("ascii")
 				point1, point2 = get_points(points)
 				
-				data = make_move(self.game, point1, point2, addr[1])
-				conn.sendall(data)
+				# last, score, board = make_move(self.game, point1, point2, addr[1])
+				# for i in self.clients:
+				# 	i.sendall(last)
+				# 	i.sendall(score)
+				# 	i.sendall(board)
 			
-			conn.sendall(b"Game ended")
+			for i in self.clients:
+				i.sendall(b"Game finished")
 		except Exception as e:
 			print(e)
 		finally:
@@ -82,16 +87,21 @@ def make_move(game, point1, point2, player):
 	msg = game.verify_move(point1, point2, player)
 
 	if(msg == "Invalid move"):
-		msg += ", "
-		data = msg.encode("ascii")
+		board = game.str_board()
+		msg += ", " + board
+		last = msg.encode("ascii")
 	else:
 		board = game.str_board_move(point1, point2)
 		msg += "," + board
-		score = game.count_scores()
-		msg += score
-		data = msg.encode("ascii")
+		last = msg.encode("ascii")
 		
-	return data
+	msg = game.count_scores()
+	score = msg.encode("ascii")
+
+	msg = game.str_board()
+	board = msg.encode("ascii")
+	
+	return last, score, board
 
 def make_random_move(game):
 	msg, move = game.random_move()
