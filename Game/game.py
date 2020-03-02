@@ -15,6 +15,29 @@ class memory:
 		self.pairs = int((self.difficulty ** 2) / 2)
 		self.scramble()
 
+	def add_player(self, client):
+		self.players.append(client)
+		player_id = self.players.index(client)
+		
+		return player_id
+
+	def get_player(self, client):
+		index = self.players.index(client) + 1
+
+		return index
+
+	def set_board(self, diff):
+		if(diff == "1"):
+			self.difficulty = 4
+			self.board = np.zeros(16, dtype=np.uint8)
+			self.score = np.zeros(16, dtype=np.uint8)
+			self.pairs = 8
+		elif(diff == 2):
+			self.difficulty = 6
+			self.board = np.zeros(36, dtype=np.uint8)
+			self.score = np.zeros(36, dtype=np.uint8)
+			self.pairs = 18
+
 	def scramble(self):
 		for i in range(0, self.pairs):
 			self.board[i] = i + 1
@@ -72,20 +95,19 @@ class memory:
 		return msg
 
 	def set_score(self, x, player):
+		i = self.get_player(player)
 		# i = self.players.index(player)
-		self.score[x] = player
+		self.score[x] = i
 
 	def count_scores(self):
-		# score = ""
-		# for i in range(len(self.players)):
-		# 	points = int(np.count_nonzero(self.score == i) / 2)
-		# 	score += "player" + str(i) + ": " + str(points)
-		player1 = int(np.count_nonzero(self.score == 1) / 2)
-		player2 = int(np.count_nonzero(self.score == 2) / 2)
-
-		return "CPU: " + str(player1) + " Player: " + str(player2)
-
-		# return score
+		score = ""
+		for i in (self.players):
+			points = int(np.count_nonzero(self.score == self.get_player(i)) / 2)
+			score += "p" + str(self.get_player(i)) + ": " + str(points) + " "
+		# player1 = int(np.count_nonzero(self.score == 1) / 2)
+		# player2 = int(np.count_nonzero(self.score == 2) / 2)
+		
+		return score
 	
 	def str_board_move(self, point1, point2):
 		strboardmove = ""
