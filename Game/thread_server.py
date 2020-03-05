@@ -9,6 +9,8 @@ class server:
 	clients = []
 	threads = []
 	game = memory()
+	player_slots = 5
+	barrier = threading.Barrier(5)
 
 	def __init__(self, host="127.0.0.1", port=65432):
 		self.server_addr = (host, port)
@@ -21,8 +23,9 @@ class server:
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
 			tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			tcp_socket.bind(self.server_addr)
-			tcp_socket.listen(5)
-			print("Listening...")
+			tcp_socket.listen(10)
+			print("Waiting for " + str(self.player_slots))
+
 			self.client_connection(tcp_socket)
 		
 	def client_connection(self, tcp_socket):
@@ -52,6 +55,9 @@ class server:
 
 	def playing(self, conn, addr):
 		try:
+			self.player_slots -= 1
+			print("Waiting for " + str(self.player_slots))
+			self.barrier.wait()
 			cur_thread = threading.current_thread()
 			print("{} playing from {}".format(addr, cur_thread.name))
 			while(np.count_nonzero(self.game.score) < len(self.game.score)):
