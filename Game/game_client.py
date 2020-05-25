@@ -13,6 +13,8 @@ class client:
 			self.playing(tcp_socket)
 
 	def playing(self, tcp_socket):
+		data = tcp_socket.recv(self.buffer_size)
+		self.print_msg(data.decode("ascii"))
 		winner = False
 
 		while(not winner):
