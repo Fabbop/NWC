@@ -8,7 +8,9 @@ class server:
 	buffer_size = 1024
 	clients = []
 	threads = []
+	active = []
 	game = memory()
+	lock = threading.Lock()
 	player_slots = 2
 	barrier = threading.Barrier(2)
 
@@ -63,6 +65,12 @@ class server:
 		# print("Enum: ", threading.enumerate())
 		# print("Connections: ", len(self.clients))
 		# print(self.clients)
+
+	def activate_thread(self):
+		pass
+	
+	def deactivate_thread(self):
+		pass
 
 	def playing(self, conn, addr):
 		try:
