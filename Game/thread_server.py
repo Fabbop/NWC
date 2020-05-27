@@ -1,6 +1,26 @@
-import socket, time, random, threading, copy
+import socket, time, random, threading, copy, queue
 import numpy as np
 from game import memory
+
+class threadpool():
+
+	active = []
+	lock = threading.Lock()
+
+	def __init__(self):
+        super(threadpool, self).__init__()
+        self.active = []
+        self.lock = threading.Lock()
+
+	def activate(self, name):
+		with self.lock:
+			self.active.append(name)
+			# logging.debug('Ejecutando: %s', self.active)
+
+	def deactivate(self, name):
+		with self.lock:
+			self.active.remove(name)
+			# logging.debug('Ejecutando: %s', self.active)
 
 class server:
 
@@ -9,8 +29,11 @@ class server:
 	clients = []
 	threads = []
 	game = memory()
-	player_slots = 5
-	barrier = threading.Barrier(5)
+	player_slots = 2
+	barrier = threading.Barrier(2)
+	q = queue.Queue(maxsize=2)
+	pool = threadpool()
+	sem = threading.Semaphore(2)
 
 	def __init__(self, host="127.0.0.1", port=65432):
 		self.server_addr = (host, port)

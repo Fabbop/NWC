@@ -1,6 +1,28 @@
-import socket, time, random, threading, copy
+import socket, time, random, threading, copy, queue
 import numpy as np
 from game import memory
+
+class threadpool():
+
+	active = []
+	lock = threading.Lock()
+
+	def __init__(self):
+		super(threadpool, self).__init__()
+		self.active = []
+		self.lock = threading.Lock()
+
+	def activate(self, name):
+		with self.lock:
+			self.active.append(name)
+			print(self.active)
+			# logging.debug('Ejecutando: %s', self.active)
+
+	def deactivate(self, name):
+		with self.lock:
+			self.active.remove(name)
+			print(self.active)
+			# logging.debug('Ejecutando: %s', self.active)
 
 class server:
 
@@ -8,10 +30,9 @@ class server:
 	buffer_size = 1024
 	clients = []
 	threads = []
-	active = []
 	game = memory()
-	lock = threading.Lock()
 	player_slots = 2
+	lock = threading.Lock()
 	barrier = threading.Barrier(2)
 
 	def __init__(self, host="127.0.0.1", port=65432):
@@ -36,7 +57,7 @@ class server:
 		
 	def client_connection(self, tcp_socket):
 		try:
-			while True:
+			while self.player_slots:
 				client_conn, client_addr = tcp_socket.accept()
 
 				self.player_slots -= 1
@@ -47,12 +68,14 @@ class server:
 
 				print("Connection established with: ", client_addr)
 				self.clients.append(client_conn)
-				self.game.add_player(client_addr[1])
+				self.game.add_player(client_addr[1]))
 				print(self.game.players)
-				thread_read = threading.Thread(target=self.playing, args=[client_conn, client_addr])
+
+				thread_read = threading.Thread(target=self.playing, args=(client_conn, client_addr, self.sem, self.pool))
 				self.threads.append(thread_read)
 				thread_read.start()
 				self.connection_management()
+
 		except Exception as e:
 			print(e)
 
@@ -66,18 +89,13 @@ class server:
 		# print("Connections: ", len(self.clients))
 		# print(self.clients)
 
-	def activate_thread(self):
-		pass
-	
-	def deactivate_thread(self):
-		pass
-
-	def playing(self, conn, addr):
+	def playing(self, conn, addr, sem, pool):
 		try:
 			self.barrier.wait()
-			cur_thread = threading.current_thread()
-			print("{} playing from {}".format(addr, cur_thread.name))
+			# cur_thread = threading.current_thread()
+			# print("{} playing from {}".format(addr, cur_thread.name))
 			while(np.count_nonzero(self.game.score) < len(self.game.score)):
+				self.lock.acquire()
 				conn.sendall(b"Waiting player move")
 				print("Waiting players move...")
 				
@@ -87,6 +105,7 @@ class server:
 				
 				data = make_move(self.game, point1, point2, addr[1])
 				conn.sendall(data)
+				self.lock.release()
 			
 			conn.sendall(b"Game ended")
 		except Exception as e:
