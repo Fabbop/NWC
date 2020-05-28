@@ -2,28 +2,6 @@ import socket, time, random, threading, copy, queue
 import numpy as np
 from game import memory
 
-class threadpool():
-
-	active = []
-	lock = threading.Lock()
-
-	def __init__(self):
-		super(threadpool, self).__init__()
-		self.active = []
-		self.lock = threading.Lock()
-
-	def activate(self, name):
-		with self.lock:
-			self.active.append(name)
-			print(self.active)
-			# logging.debug('Ejecutando: %s', self.active)
-
-	def deactivate(self, name):
-		with self.lock:
-			self.active.remove(name)
-			print(self.active)
-			# logging.debug('Ejecutando: %s', self.active)
-
 class server:
 
 	server_addr = ("127.0.0.1", 65432)
@@ -68,10 +46,10 @@ class server:
 
 				print("Connection established with: ", client_addr)
 				self.clients.append(client_conn)
-				self.game.add_player(client_addr[1]))
+				self.game.add_player(client_addr[1])
 				print(self.game.players)
 
-				thread_read = threading.Thread(target=self.playing, args=(client_conn, client_addr, self.sem, self.pool))
+				thread_read = threading.Thread(target=self.playing, args=(client_conn, client_addr))
 				self.threads.append(thread_read)
 				thread_read.start()
 				self.connection_management()
@@ -89,7 +67,7 @@ class server:
 		# print("Connections: ", len(self.clients))
 		# print(self.clients)
 
-	def playing(self, conn, addr, sem, pool):
+	def playing(self, conn, addr):
 		try:
 			self.barrier.wait()
 			# cur_thread = threading.current_thread()
@@ -106,6 +84,7 @@ class server:
 				data = make_move(self.game, point1, point2, addr[1])
 				conn.sendall(data)
 				self.lock.release()
+				time.sleep(0.5)
 			
 			conn.sendall(b"Game ended")
 		except Exception as e:
