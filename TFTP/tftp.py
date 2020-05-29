@@ -67,9 +67,9 @@ def get_blocknum(packet):
 	return struct.unpack("!H", packet[2:4])[0]
 
 def get_filename(packet):
-	filename = packet[2:-7].decode(ascii)
-	# return packet[2:-7].decode(ascii)
-	return filename
+	# filename = packet[2:-7].decode(ascii)
+	# return filename
+	return packet[2:-7]
 
 def file_exist(filename):
 	return path.exists(filename)

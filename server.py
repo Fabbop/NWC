@@ -12,7 +12,7 @@ class server():
 
 		with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as udp_client:
 			while True:
-				print("Listening on %s %d ...", self.addr[0], self.addr[1])
+				print("Listening...")
 				self.print_logging("Listening...")
 				rq_packet, client_addr = udp_client.recvfrom(512)
 				rq_code = tftp.get_opcode(rq_packet)
@@ -91,4 +91,4 @@ class server():
 # 		print("{} from {}".format(data, addr))
 # 		s.sendto("Hello, {}".format(addr), addr)
 
-server("192.168.1.68", 69)
+server("192.168.1.68", 65432)

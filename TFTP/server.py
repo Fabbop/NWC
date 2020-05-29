@@ -9,9 +9,13 @@ class server():
 
 	def __init__(self, host="127.0.0.1", port=69):
 		self.addr = (host, port)
+		self.handle_request()
 
+	def handle_request(self):
 		with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as udp_client:
+			udp_client.bind(self.addr)
 			while True:
+				print(self.addr)
 				print("Listening...")
 				self.print_logging("Listening...")
 				rq_packet, client_addr = udp_client.recvfrom(512)
@@ -28,7 +32,8 @@ class server():
 
 	def put(self, rq_packet, udp_client, client_addr):
 		try:
-			if(tftp.file_exist(tftp.get_filename(rq_packet))):
+			filename = tftp.get_filename(rq_packet).decode("ascii")
+			if(tftp.file_exist(filename)):
 				packet = tftp.set_error_packet(6, "File already exists")
 				udp_client.sendto(packet, client_addr)
 				return
@@ -46,9 +51,6 @@ class server():
 							ack_no = tftp.get_blocknum(packet)
 							ack_packet = tftp.set_ack_packet(ack_no)
 							udp_client.sendto(ack_packet, client_addr)
-
-
-
 
 		except OSError as e:
 			if(e.errno == errno.ENOENT):
@@ -91,4 +93,4 @@ class server():
 # 		print("{} from {}".format(data, addr))
 # 		s.sendto("Hello, {}".format(addr), addr)
 
-server("192.168.1.68", 69)
+server("192.168.1.68")
