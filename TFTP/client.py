@@ -58,6 +58,9 @@ class client():
 							if(not data):
 								break
 					packet = tftp.set_data_packet(block_num, data)
+				elif(tftp.get_opcode(ack_packet) == tftp.ERROR):
+					pass
+					
 		except Exception as e:
 			self.print_logging(e)
 		# except OSError as e:
