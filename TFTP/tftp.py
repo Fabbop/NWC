@@ -7,11 +7,11 @@ DEFAULT_PORT = 69
 def default_port(): 
 	return socket.getservbyname("tftp", "udp")
 
-def read_chunk(filename):
+def read_chunk(filename, sock_fd):
 	with open(filename, "rb") as fd:
 		while(True):
 			data = fd.read(512)
-			print(data)
+			# print(data)
 			if(not data):
 				break
 

@@ -13,7 +13,6 @@ class client():
 		self.is_done = False
 		self.status = self.START
 		self.action = ""
-		# self.debug = argv.get("debug", False)
 		self.block_size = 512
 		self.filename = filename
 		self.setup_file()
@@ -140,10 +139,13 @@ while True:
 	line = input("tftp> ")
 	command = line.split(" ")
 	if(command[0] == "connect"):
-		tftp_client.server_addr = (command[1], command[2])
+		print(command)
+		# tftp_client.server_addr = (command[1], command[2])
 	elif(command[0] == "get"):
-		get(command[1])
+		print(command)
+		# get(command[1])
 	elif(command[0] == "put"):
-		put(command[1])
+		print(command)
+		# put(command[1])
 	elif(command[0] == "quit"):
 		break
