@@ -43,7 +43,7 @@ def set_ack_packet(block_num):
 
 def set_error_packet(errono, msg):
 	errmsg = bytes(msg, "utf-8")
-	values = (ERROR, errono, msg, 0)
+	values = (ERROR, errono, errmsg, 0)
 	s = struct.Struct("!HH{}sB".format(len(errmsg)))
 	return s.pack(*values)
 
