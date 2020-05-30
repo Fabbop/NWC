@@ -1,36 +1,107 @@
-import os
 from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.server import SimpleXMLRPCRequestHandler
+import os
 
-# Restrict to a particular path.
 class RequestHandler(SimpleXMLRPCRequestHandler):
 	rpc_paths = ("/RPC2",)
 	
-# Create server
-with SimpleXMLRPCServer(("localhost", 8000), requestHandler=RequestHandler) as server:
+with SimpleXMLRPCServer(("localhost", 8000), requestHandler=RequestHandler, allow_none=True, logRequests=True) as server:
   
 	server.register_introspection_functions()
 
-	# Register a function under a different name
-	# def adder_function(x, y):
-	# 	return x + y
-
-	# server.register_function(adder_function, 'add')
-
-	# Register an instance; all the methods of the instance are
-	# published as XML-RPC methods (in this case, just 'mul').
 	class FileSystem:
 
 		def check_directory(self, directory):
 			return os.path.exists(directory)
 
-		def create_file(self, filename, fnext):
-			pass
+		def mkdir(self, path, namedir):
+			dirpath = path + namedir
+			try:
+				os.mkdir(dirpath)
+			except OSError as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				msg = "Directory %s created" % dirpath
+				return msg
 
-		def mul(self, x, y):
-			return x * y
+		def rmdir(self, path, namedir):
+			dirpath = path + namedir
+			try:
+				os.rmdir(dirpath)
+			except OSError as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				msg = "Directory %s deleted" % dirpath
+				return msg
+
+		def delete_file(self, path, filename):
+			filepath = path + filename
+			try:
+				os.remove(filepath)
+			except OSError as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				msg = "File %s deleted" % filepath
+				return msg
+
+		def create_file(self, cwd, filename):
+			filepath = cwd + filename + ".txt"
+			try:
+				f = open(filepath, "wb")
+				f.close()
+			except Exception as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				msg = "File %s created" % filename
+				return msg
+
+		def write_to_file(self, cwd, filename, data):
+			filepath = cwd + filename
+			try:
+				with open(filepath, "a") as fd:
+					fd.write(data + "\r\n")
+			except Exception as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				msg = "File written"
+				return msg
+
+		def read_file(self, cwd, filename):
+			filepath = cwd + filename
+			try:
+				with open(filepath, "r") as fd:
+					lines = fd.readlines()
+			except Exception as e:
+				msg = "An Error has ocurred: %s" % e
+				return msg
+			else:
+				return lines
+
+		def ls(self, path):
+			return os.listdir(path)
+		
+		def change_directory(self, path, cwd, user_dir):
+			if(path == ".."):
+				if(cwd == user_dir):
+					return "You can't change directory"
+				else:
+					current = cwd.split("/")[:-2]
+					cwd = "/".join(current) + "/"
+					return cwd
+			elif(self.check_directory(cwd + path)):
+				cwd = cwd + path + "/"
+				return cwd
+			elif(path == ""):
+				return user_dir
+			else:
+				return "No such file or directory"
+
 
 	server.register_instance(FileSystem())
 
-	# Run the server's main loop
 	server.serve_forever()
