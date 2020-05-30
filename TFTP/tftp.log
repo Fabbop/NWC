@@ -1,10 +1,5 @@
-2020-05-29 21:02:09,981 Setting request packet
-2020-05-29 21:02:09,981 Writing request sent
-2020-05-29 21:02:29,074 Setting request packet
-2020-05-29 21:02:29,074 Writing request sent
-2020-05-29 21:02:29,079 Transfer accepted
-2020-05-29 21:02:31,720 Transfer completed
-2020-05-29 21:03:08,314 Setting request packet
-2020-05-29 21:03:08,314 Writing request sent
-2020-05-29 21:03:08,319 An error has ocurred
-2020-05-29 21:03:08,319 File already exists
+2020-05-30 01:43:24,709 Setting request packet
+2020-05-30 01:43:24,710 Reading request sent
+2020-05-30 01:43:24,714 Transfer accepted
+2020-05-30 01:43:24,715 Ready to receive file hola.txt
+2020-05-30 01:43:26,961 Transfer completed
