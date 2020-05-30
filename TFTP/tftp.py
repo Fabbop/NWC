@@ -71,6 +71,9 @@ def get_filename(packet):
 	# return filename
 	return packet[2:-7]
 
+def get_error_msg(packet):
+	return packet[4:-1]
+
 def file_exist(filename):
 	return path.exists(filename)
 

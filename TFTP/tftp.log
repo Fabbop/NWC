@@ -1,9 +1,0 @@
-2020-05-29 21:02:20,334 Listening...
-2020-05-29 21:02:29,091 Write Request received from ('192.168.1.68', 61313)
-2020-05-29 21:02:29,091 Ready to receive file hola.txt
-2020-05-29 21:02:31,733 Transfer completed
-2020-05-29 21:02:31,733 Listening...
-2020-05-29 21:03:08,331 Write Request received from ('192.168.1.68', 49712)
-2020-05-29 21:03:08,331 An error has ocurred
-2020-05-29 21:03:08,331 File already exists
-2020-05-29 21:03:08,331 Listening...

@@ -22,7 +22,10 @@ class server():
 				rq_code = tftp.get_opcode(rq_packet)
 				if(rq_code == 1):
 					# RRQ
-					pass
+					filename = tftp.get_filename(rq_packet).decode("ascii")
+					self.print_logging("Read Request received from {}".format(client_addr))
+					print("Read Request received from {}".format(client_addr))
+					self.get(filename, udp_client, client_addr)
 				elif(rq_code == 2):
 					# WRQ
 					self.print_logging("Write Request received from {}".format(client_addr))
@@ -65,6 +68,70 @@ class server():
 				
 				self.print_logging("Transfer completed")
 				print("Transfer completed")
+
+		except OSError as e:
+			self.print_logging("An error has ocurred")
+			print("An error has ocurred")
+			if(e.errno == errno.ENOENT):
+				# file not found
+				packet = tftp.set_error_packet(1, "File not found")
+				udp_client.sendto(packet, client_addr)
+				self.print_logging("File not found")
+				return 
+			elif(e.errno == errno.EPERM or errno.EACCES):
+				# acces violation
+				packet = tftp.set_error_packet(2, "Access violation")
+				udp_client.sendto(packet, client_addr)
+				self.print_logging("Access violation")
+				return
+			elif(errno == errno.EFBIG or errno.ENOSPC):
+				# disk full
+				packet = tftp.set_error_packet(3, "Disk full")
+				udp_client.sendto(packet, client_addr)
+				self.print_logging("Disk full")
+				return
+			else:
+				# unknown
+				packet = tftp.set_error_packet(0, "Unknown")
+				udp_client.sendto(packet, client_addr)
+				self.print_logging("Unknown")
+				return
+		except Exception as e:
+			self.print_logging(e)
+			return
+
+	def get(self, filename, udp_client, client_addr):
+		try:
+			if(tftp.file_exist(filename)):
+				ack_packet = tftp.set_ack_packet(0)
+				udp_client.sendto(ack_packet, client_addr)
+				ack_packet, addr = udp_client.recvfrom(516)
+				if(tftp.get_opcode(ack_packet) == tftp.ACK and tftp.get_blocknum(ack_packet) == 0):
+					self.print_logging("Transfer accepted")
+					with open(filename, "rb") as fd:
+						block_num = 1
+						while(True):
+							data = fd.read(512)
+							packet = tftp.set_data_packet(block_num, data)
+							udp_client.sendto(packet, client_addr)
+							ack_packet, addr = udp_client.recvfrom(516)
+							block_num =+ 1 
+							if(not data):
+								print("Transfer completed")
+								self.print_logging("Transfer completed")
+								break
+					
+					# packet = tftp.set_data_packet(block_num, data)
+				elif(tftp.get_opcode(ack_packet) == tftp.ERROR):
+					self.print_logging("An error has ocurred")
+					error_msg = tftp.get_error_msg(ack_packet).decode("ascii")
+					self.print_logging(error_msg)
+					print("An error has ocurred: " + error_msg)
+					
+			else:
+				self.print_logging("An error has ocurred, File not found")
+				print("An error has ocurred, File not found")
+				return
 
 		except OSError as e:
 			self.print_logging("An error has ocurred")
