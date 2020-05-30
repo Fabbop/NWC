@@ -127,8 +127,10 @@ class server():
 					error_msg = tftp.get_error_msg(ack_packet).decode("ascii")
 					self.print_logging(error_msg)
 					print("An error has ocurred: " + error_msg)
-					
+
 			else:
+				ack_packet = tftp.set_error_packet(1, "File not found")
+				udp_client.sendto(ack_packet, client_addr)
 				self.print_logging("An error has ocurred, File not found")
 				print("An error has ocurred, File not found")
 				return
