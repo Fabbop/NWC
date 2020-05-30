@@ -10,69 +10,44 @@ class client():
 	def __init__(self, host="127.0.0.1", port=69):
 		self.server_addr = (host, port)
 
-	# def reset(self):
-	# 	self.block_num = 1
-	# 	self.is_done = False
-	# 	# self.status = self.START
-	# 	self.port = 69
-	# 	# self.setup_file()
-	# 	self.setup_connect()
-
-	# def max_packet_size(self):
-	# 	return 516
-
-	# def setup_connect(self):
-	# 	self.sock_fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-	# def send_packet(self, packet):
-	# 	self.sock_fd.sendto(packet, self.server_addr)
-
-	# def recv_packet(self):
-	# 	(packet, addr) = self.sock_fd.recvfrom(self.max_packet_size)
-	# 	return (packet, addr)
-
 	def print_logging(self, msg):
 		logging.debug(msg)
 	
 	def put(self, filename):
 		try:
 			with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as udp_socket:
-				self.print_logging("Ready to send %s" % filename)
 				wrq_packet = tftp.set_request_packet(tftp.WRQ, filename)
-				self.print_logging("Setting request packet...")
+				self.print_logging("Setting request packet")
 				udp_socket.sendto(wrq_packet, self.server_addr)
-				self.print_logging("WRQ sent")
-				ack_packet = udp_socket.recvfrom(516)
+				self.print_logging("Writing request sent")
+				ack_packet, addr = udp_socket.recvfrom(516)
 				if(tftp.get_opcode(ack_packet) == tftp.ACK and tftp.get_blocknum(ack_packet) == 0):
-					self.print_logging("Received ACK for %d" % 0)
+					self.print_logging("Transfer accepted")
+					print("Transfer accepted")
 					with open(filename, "rb") as fd:
 						block_num = 1
 						while(True):
 							data = fd.read(512)
 							packet = tftp.set_data_packet(block_num, data)
 							udp_socket.sendto(packet, self.server_addr)
-							ack_packet = udp_socket.recvfrom(516) 
+							# self.print_logging("Block %d sent" % block_num)
+							ack_packet, addr = udp_socket.recvfrom(516)
 							# if(tftp.get_opcode(ack_packet) == block_num):
-							self.print_logging("Received ACK for %d" % block_num)
+							# self.print_logging("Received ACK for %d" % block_num)
 							block_num += 1
 							if(not data):
+								print("Transfer completed")
+								self.print_logging("Transfer completed")
 								break
 					packet = tftp.set_data_packet(block_num, data)
 				elif(tftp.get_opcode(ack_packet) == tftp.ERROR):
-					pass
+					self.print_logging("An error has ocurred")
+					error_msg = tftp.get_error_msg(ack_packet).decode("ascii")
+					self.print_logging(error_msg)
+					print("An error has ocurred: " + error_msg)
 					
 		except Exception as e:
 			self.print_logging(e)
-		# except OSError as e:
-		# 	if(e.errno == errno.ENONET):
-		# 		# file not found
-		# 	elif(e.errno == errno.EPERM or errno.EACCES):
-		# 		# acces violation
-		# 	elif(errno == errno.EFBIG or errno.ENOSPC):
-		# 		# disk full
-		# 	else:
-		# 		# unknown
-			
 
 	def get(self, filename):
 		try:
@@ -148,28 +123,17 @@ class client():
 	# 		self.handle_packet(packet, addr)
 
 
-tftp_client = client()					
-
-# def get(filename):
-# 	tftp_client.filename = filename
-# 	tftp_client.action = "get"
-# 	tftp_client.reset()
-# 	tftp_client.handle()
-
-
+tftp_client = client("192.168.1.78", 65432)
 
 print("TFTP client.")
 while True:
 	line = input("tftp> ")
 	command = line.split(" ")
 	if(command[0] == "connect"):
-		print(command)
 		tftp_client.server_addr = (command[1], int(command[2]))
 	elif(command[0] == "get"):
 		print(command)
-		# tftp_client.get(command[1])
 	elif(command[0] == "put"):
-		print(command)
 		tftp_client.put(command[1])
 	elif(command[0] == "quit"):
 		break

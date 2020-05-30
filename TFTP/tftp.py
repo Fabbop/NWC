@@ -43,7 +43,7 @@ def set_ack_packet(block_num):
 
 def set_error_packet(errono, msg):
 	errmsg = bytes(msg, "utf-8")
-	values = (ERROR, errono, msg, 0)
+	values = (ERROR, errono, errmsg, 0)
 	s = struct.Struct("!HH{}sB".format(len(errmsg)))
 	return s.pack(*values)
 
@@ -67,14 +67,17 @@ def get_blocknum(packet):
 	return struct.unpack("!H", packet[2:4])[0]
 
 def get_filename(packet):
-	# filename = packet[2:-7].decode(ascii)
-	# return filename
 	return packet[2:-7]
+
+def get_error_msg(packet):
+	return packet[4:-1]
 
 def file_exist(filename):
 	return path.exists(filename)
 
 
+# packet = set_error_packet(1, "File not found")
+# print(get_error_msg(packet).decode("ascii"))
 # packet = set_request_packet(WRQ, "hola.txt")
 # print(get_filename(packet).decode("ascii"))
 # read_chunk("hola.txt")
