@@ -2,7 +2,7 @@ import xmlrpc.client, datetime
 
 class client:
 	
-	server = xmlrpc.client.ServerProxy("http://localhost:8000")
+	server = xmlrpc.client.ServerProxy("http://192.168.1.78:8000")
 	user_dir = ""
 	cwd = ""
 
