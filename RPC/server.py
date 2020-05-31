@@ -5,7 +5,7 @@ import os
 class RequestHandler(SimpleXMLRPCRequestHandler):
 	rpc_paths = ("/RPC2",)
 	
-with SimpleXMLRPCServer(("localhost", 8000), requestHandler=RequestHandler, allow_none=True, logRequests=True) as server:
+with SimpleXMLRPCServer(("192.168.1.78", 8000), requestHandler=RequestHandler, allow_none=True, logRequests=True) as server:
   
 	server.register_introspection_functions()
 
